@@ -1,6 +1,15 @@
 {
   "packName": "TDC Valheim Pack",
-  "packVersion": "0.3.0",
-  "gameVersion": "1.0",
-  "files": []
+  "packVersion": "0.4.0",
+  "packages": [
+    {
+      "name": "BepInExPack_Valheim",
+      "type": "githubFolder",
+      "source": "BepInExPack_Valheim",
+      "destination": ".",
+      "exclude": [
+        "*.sh"
+      ]
+    }
+  ]
 }
