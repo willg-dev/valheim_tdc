@@ -1,0 +1,10 @@
+Changelog
+0.3.0
+Added GitHub-hosted manifest.
+Added permanent BAT launcher + PowerShell updater.
+Added pinned URL and SHA-256 verification model.
+Added Install/Update.
+Added Verify/Repair.
+Added backup restore.
+Added TDC-managed uninstall.
+Added Steam library discovery.
