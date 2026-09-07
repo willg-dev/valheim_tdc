@@ -1,36 +1,17 @@
-Changelog
-0.3.0
-Added GitHub-hosted manifest.
-Added permanent BAT launcher + PowerShell updater.
-Added pinned URL and SHA-256 verification model.
-Added Install/Update.
-Added Verify/Repair.
-Added backup restore.
-Added TDC-managed uninstall.
-Added Steam library discovery.
-
-# TDC Valheim Installer v0.4.0
-
-This version installs the contents of the repository's `BepInExPack_Valheim`
-folder directly into the Valheim root directory.
-
-## Important
-
-Upload/replace the root `manifest.json` in the GitHub repository with the
-included manifest before testing the installer.
-
-The installer downloads the repository ZIP for `main`, locates
-`BepInExPack_Valheim`, and copies the CONTENTS of that folder into Valheim.
-The parent `BepInExPack_Valheim` directory itself is not created in Valheim.
-
-Linux `.sh` launch scripts are excluded for the Windows client pack.
-
-## Future mods
-
-Two package types are supported:
-
-- `githubFolder` - recursively installs a folder from this repository.
-- `file` - downloads an individual file; an optional `sha256` can verify it.
-
-TDC-managed files are recorded locally so later TDC releases can remove files
-that were part of the previous pack without deleting unrelated user mods.
+TDC Valheim Installer v0.5.0
+Adds first-launch detection for BepInEx.
+New installation flow
+Run installer and choose Install / Update.
+The installer installs the BepInEx bootstrap package.
+Launch Valheim normally through Steam and reach the main menu.
+Close Valheim.
+Run the installer again.
+The installer detects `BepInEx\LogOutput.log` and permits the full TDC pack installation.
+Future mods should be added to `packages` in manifest.json with a stage other
+than `bootstrap`. Only bootstrap packages are installed before BepInEx has
+successfully initialized.
+The status screen now reports:
+BepInEx installed/not installed
+BepInEx setup complete/first launch required
+Installed TDC version
+Repository TDC version
