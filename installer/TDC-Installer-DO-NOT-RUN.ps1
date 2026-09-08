@@ -13,7 +13,7 @@ $BackupName = "TDCModpackBackups"
 function Show-Header {
     Clear-Host
     Write-Host "============================================================"
-    Write-Host "                 TDC VALHEIM INSTALLER v0.7"
+    Write-Host "                 TDC VALHEIM INSTALLER v0.7.1"
     Write-Host "============================================================"
     Write-Host ""
 }
@@ -106,9 +106,17 @@ function Get-PackageFileMap {
         $sourceRoot = Join-Path $Snapshot.Root $package.source
         if (-not (Test-Path $sourceRoot)) { throw "Repository package '$($package.source)' was not found." }
 
-        $include = @($package.include)
-        $exclude = @($package.exclude)
+        $include = @()
+        $exclude = @()
 
+        if ($null -ne $package.PSObject.Properties["include"]) {
+            $include = @($package.include | Where-Object { $null -ne $_ -and $_ -ne "" })
+        }
+        if ($null -ne $package.PSObject.Properties["exclude"]) {
+            $exclude = @($package.exclude | Where-Object { $null -ne $_ -and $_ -ne "" })
+        }
+
+        $packageFileCount = 0
         foreach ($file in (Get-ChildItem $sourceRoot -File -Recurse)) {
             $relative = $file.FullName.Substring($sourceRoot.Length).TrimStart('\','/')
             $copy = ($include.Count -eq 0)
@@ -130,7 +138,16 @@ function Get-PackageFileMap {
                 Destination = $destination
                 Hash = (Get-FileHash -Path $file.FullName -Algorithm SHA256).Hash
             }
+            $packageFileCount++
         }
+
+        if ($packageFileCount -eq 0) {
+            throw "Package '$($package.name)' resolved to 0 installable files. Installation stopped."
+        }
+    }
+
+    if ($map.Count -eq 0) {
+        throw "The TDC repository resolved to 0 installable files. Installation stopped."
     }
     return $map
 }
@@ -226,6 +243,29 @@ function Compare-WithRepository {
     return $results
 }
 
+function Assert-BepInExBootstrap {
+    param([string]$GamePath)
+
+    $required = @("BepInEx", "doorstop_libs", "doorstop_config.ini", "winhttp.dll")
+    $missing = @()
+
+    foreach ($relative in $required) {
+        if (-not (Test-Path (Join-Path $GamePath $relative))) {
+            $missing += $relative
+        }
+    }
+
+    if ($missing.Count -gt 0) {
+        throw "BepInEx bootstrap validation failed. Missing: $($missing -join ', ')"
+    }
+
+    Write-Host ""
+    Write-Host "BepInEx bootstrap validation:" -ForegroundColor Cyan
+    foreach ($relative in $required) {
+        Write-Host "[OK] $relative" -ForegroundColor Green
+    }
+}
+
 function Install-TDCPack {
     param([string]$GamePath, $RemoteManifest)
 
@@ -248,6 +288,11 @@ function Install-TDCPack {
         $snapshot = Get-RepositorySnapshot
         $map = Get-PackageFileMap -RemoteManifest $RemoteManifest -Snapshot $snapshot -BootstrapOnly $bootstrapOnly
         Sync-FileMap -GamePath $GamePath -FileMap $map
+
+        if ($bootstrapOnly) {
+            Assert-BepInExBootstrap -GamePath $GamePath
+        }
+
         Save-State -GamePath $GamePath -RemoteManifest $RemoteManifest -FileMap $map
     }
     finally { Remove-Snapshot -Snapshot $snapshot }
