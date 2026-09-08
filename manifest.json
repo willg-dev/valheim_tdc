@@ -1,15 +1,38 @@
 {
   "packName": "TDC Valheim Pack",
-  "packVersion": "0.5.0",
+  "packVersion": "0.6.0",
   "packages": [
     {
       "name": "BepInExPack_Valheim",
       "type": "githubFolder",
       "stage": "bootstrap",
+      "target": "client-server",
       "source": "BepInExPack_Valheim",
       "destination": ".",
       "exclude": [
         "*.sh"
+      ]
+    },
+    {
+      "name": "SmoothServer",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/SmoothServer",
+      "destination": "BepInEx/plugins/SmoothServer",
+      "include": [
+        "*.dll"
+      ]
+    },
+    {
+      "name": "MaxPlayerCount",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "server",
+      "source": "TDCMods/plugins/MaxPlayerCount",
+      "destination": "BepInEx/plugins/MaxPlayerCount",
+      "include": [
+        "*.dll"
       ]
     }
   ]
