@@ -1,69 +1,496 @@
-﻿$ErrorActionPreference="Stop"
-$Owner="willg-dev"; $Repo="valheim_tdc"; $Branch="main"
-$Raw="https://raw.githubusercontent.com/$Owner/$Repo/$Branch"
-$ManifestUrl="$Raw/manifest.json"
-$StateName="TDCValheimPack.manifest.json"; $VersionName="TDCValheimPack.version"; $BackupName="TDCModpackBackups"
+﻿$ErrorActionPreference = "Stop"
 
-function Header { Clear-Host; Write-Host "============================================================"; Write-Host "                 TDC VALHEIM INSTALLER v0.6"; Write-Host "============================================================"; Write-Host "" }
-function GamePath {
- $c=@()
- if(${env:ProgramFiles(x86)}){$c+=Join-Path ${env:ProgramFiles(x86)} "Steam\steamapps\common\Valheim"}
- if($env:ProgramFiles){$c+=Join-Path $env:ProgramFiles "Steam\steamapps\common\Valheim"}
- try{$s=(Get-ItemProperty "HKCU:\Software\Valve\Steam" -Name SteamPath).SteamPath
-  if($s){$c+=Join-Path $s "steamapps\common\Valheim";$v=Join-Path $s "steamapps\libraryfolders.vdf"
-   if(Test-Path $v){foreach($m in(Select-String $v -Pattern '"path"\s+"([^"]+)"' -AllMatches).Matches){$l=$m.Groups[1].Value-replace'\\\\','\';$c+=Join-Path $l "steamapps\common\Valheim"}}}}catch{}
- foreach($p in($c|Select-Object -Unique)){if(Test-Path(Join-Path $p "valheim.exe")){return $p}}
- $p=(Read-Host "Paste Valheim folder path").Trim('"');if(-not(Test-Path(Join-Path $p "valheim.exe"))){throw "valheim.exe not found."};return $p
+$RepoOwner = "willg-dev"
+$RepoName  = "valheim_tdc"
+$Branch    = "main"
+$RawBase   = "https://raw.githubusercontent.com/$RepoOwner/$RepoName/$Branch"
+$ManifestUrl = "$RawBase/manifest.json"
+
+$LocalManifestName = "TDCValheimPack.manifest.json"
+$VersionFileName   = "TDCValheimPack.version"
+$BackupFolderName  = "TDCModpackBackups"
+
+function Show-Header {
+    Clear-Host
+    Write-Host "============================================================"
+    Write-Host "                 TDC VALHEIM INSTALLER v0.6.1"
+    Write-Host "============================================================"
+    Write-Host ""
 }
-function Remote { Invoke-RestMethod $ManifestUrl -UseBasicParsing }
-function State($g){$p=Join-Path $g $StateName;if(Test-Path $p){try{return Get-Content $p -Raw|ConvertFrom-Json}catch{}};return $null}
-function BepOK($g){$p=Join-Path $g "BepInEx\LogOutput.log";return(Test-Path $p -PathType Leaf)-and((Get-Item $p).Length-gt 0)}
-function Backup($g){$d=Join-Path $g("$BackupName\"+(Get-Date -Format "yyyyMMdd_HHmmss"));New-Item -ItemType Directory $d -Force|Out-Null
- foreach($x in@("BepInEx","doorstop_libs","winhttp.dll","doorstop_config.ini","changelog.txt",$StateName,$VersionName)){$s=Join-Path $g $x;if(Test-Path $s){Copy-Item $s $d -Recurse -Force}};return $d}
-function RemoveOwned($g,$old){if($old -and $old.managedFiles){foreach($r in $old.managedFiles){$p=Join-Path $g $r;if(Test-Path $p -PathType Leaf){Remove-Item $p -Force}}}}
-function RepoSnapshot {
- $t=Join-Path $env:TEMP("tdc_"+[guid]::NewGuid().ToString("N"));$z="$t.zip"
- Invoke-WebRequest "https://github.com/$Owner/$Repo/archive/refs/heads/$Branch.zip" -OutFile $z -UseBasicParsing
- Expand-Archive $z $t -Force;$rr=Get-ChildItem $t -Directory|Select-Object -First 1
- if(-not $rr){throw "Repository archive empty."}
- return @{Temp=$t;Zip=$z;Root=$rr.FullName}
+
+function Get-ValheimPath {
+    $candidates = @()
+
+    if (${env:ProgramFiles(x86)}) {
+        $candidates += Join-Path ${env:ProgramFiles(x86)} "Steam\steamapps\common\Valheim"
+    }
+
+    if ($env:ProgramFiles) {
+        $candidates += Join-Path $env:ProgramFiles "Steam\steamapps\common\Valheim"
+    }
+
+    try {
+        $steamPath = (Get-ItemProperty "HKCU:\Software\Valve\Steam" -Name SteamPath).SteamPath
+
+        if ($steamPath) {
+            $candidates += Join-Path $steamPath "steamapps\common\Valheim"
+
+            $libraryVdf = Join-Path $steamPath "steamapps\libraryfolders.vdf"
+
+            if (Test-Path $libraryVdf) {
+                $matches = (Select-String $libraryVdf -Pattern '"path"\s+"([^"]+)"' -AllMatches).Matches
+
+                foreach ($match in $matches) {
+                    $libraryPath = $match.Groups[1].Value -replace '\\\\', '\'
+                    $candidates += Join-Path $libraryPath "steamapps\common\Valheim"
+                }
+            }
+        }
+    }
+    catch {
+        # Optional registry/library lookup.
+    }
+
+    foreach ($candidate in ($candidates | Select-Object -Unique)) {
+        if (Test-Path (Join-Path $candidate "valheim.exe")) {
+            return $candidate
+        }
+    }
+
+    Write-Host "Valheim was not found automatically." -ForegroundColor Yellow
+    Write-Host "Steam > Library > Valheim > Manage > Browse local files"
+    $manualPath = (Read-Host "Paste the Valheim folder path").Trim('"')
+
+    if (-not (Test-Path (Join-Path $manualPath "valheim.exe"))) {
+        throw "valheim.exe was not found at '$manualPath'."
+    }
+
+    return $manualPath
 }
-function CopyPackage($g,$pkg,$snap,[ref]$managed){
- $src=Join-Path $snap.Root $pkg.source;if(-not(Test-Path $src)){throw "Missing repository package: $($pkg.source)"}
- $inc=@($pkg.include);$exc=@($pkg.exclude)
- foreach($f in Get-ChildItem $src -File -Recurse){
-  $rel=$f.FullName.Substring($src.Length).TrimStart('\','/')
-  $ok=($inc.Count-eq 0);foreach($pat in $inc){if($pat-and($rel-like $pat-or$f.Name-like $pat)){$ok=$true}}
-  foreach($pat in $exc){if($pat-and($rel-like $pat-or$f.Name-like $pat)){$ok=$false}}
-  if(-not $ok){continue}
-  $destRel=if($pkg.destination -eq "."){$rel}else{Join-Path $pkg.destination $rel}
-  $dest=Join-Path $g $destRel;New-Item -ItemType Directory(Split-Path $dest -Parent)-Force|Out-Null;Copy-Item $f.FullName $dest -Force
-  $managed.Value+=$destRel
- }
- Write-Host "[OK] $($pkg.name)" -ForegroundColor Green
+
+function Get-RemoteManifest {
+    Write-Host "Reading TDC manifest from GitHub..."
+    return Invoke-RestMethod -Uri $ManifestUrl -UseBasicParsing
 }
-function Save($g,$m,$managed){
- [ordered]@{packName=$m.packName;packVersion=$m.packVersion;installed=(Get-Date -Format "yyyy-MM-dd HH:mm:ss");managedFiles=@($managed|Sort-Object -Unique)}|ConvertTo-Json -Depth 10|Set-Content(Join-Path $g $StateName)-Encoding UTF8
- "TDC Valheim Pack`nVersion=$($m.packVersion)"|Set-Content(Join-Path $g $VersionName)-Encoding UTF8
+
+function Get-InstalledManifest {
+    param([string]$GamePath)
+
+    $manifestPath = Join-Path $GamePath $LocalManifestName
+
+    if (Test-Path $manifestPath) {
+        try {
+            return Get-Content $manifestPath -Raw | ConvertFrom-Json
+        }
+        catch {
+            return $null
+        }
+    }
+
+    return $null
 }
-function Install($g,$m){
- $old=State $g;$initialized=BepOK $g
- if(-not $initialized){Write-Host "FIRST LAUNCH REQUIRED: installing BepInEx only." -ForegroundColor Yellow;if((Read-Host "Continue? (Y/N)")-notmatch'^[Yy]$'){return}
-  $snap=RepoSnapshot;try{$managed=@();foreach($p in @($m.packages|Where-Object{$_.stage-eq"bootstrap"})){CopyPackage $g $p $snap ([ref]$managed)}
-   if($old -and $old.managedFiles){$managed+=@($old.managedFiles)};Save $g $m $managed}finally{Remove-Item $snap.Zip -Force -ErrorAction SilentlyContinue;Remove-Item $snap.Temp -Recurse -Force -ErrorAction SilentlyContinue}
-  Write-Host "`nBepInEx installed. Launch Valheim through Steam, reach the main menu, close it, then run this installer again." -ForegroundColor Yellow;return}
- Write-Host "BepInEx initialization detected." -ForegroundColor Green
- if((Read-Host "Install/update full TDC client pack $($m.packVersion)? (Y/N)")-notmatch'^[Yy]$'){return}
- Write-Host "Backup: $(Backup $g)";RemoveOwned $g $old;$snap=RepoSnapshot
- try{$managed=@();foreach($p in @($m.packages|Where-Object{$_.target-ne"server"})){CopyPackage $g $p $snap ([ref]$managed)};Save $g $m $managed}
- finally{Remove-Item $snap.Zip -Force -ErrorAction SilentlyContinue;Remove-Item $snap.Temp -Recurse -Force -ErrorAction SilentlyContinue}
- Write-Host "`nTDC client pack $($m.packVersion) installed." -ForegroundColor Green
+
+function Test-BepInExInstalled {
+    param([string]$GamePath)
+
+    return (
+        (Test-Path (Join-Path $GamePath "BepInEx")) -and
+        (Test-Path (Join-Path $GamePath "winhttp.dll"))
+    )
 }
-function Verify($g){$s=State $g;if(-not$s){Write-Host "TDC not installed.";return};$miss=@();foreach($r in$s.managedFiles){if(-not(Test-Path(Join-Path $g $r)-PathType Leaf)){$miss+=$r}}
- if($miss.Count){Write-Host "$($miss.Count) managed files missing:" -ForegroundColor Yellow;$miss|%{Write-Host " - $_"}}else{Write-Host "All $($s.managedFiles.Count) managed files present." -ForegroundColor Green}}
-try{$g=GamePath;$m=Remote;while($true){Header;$s=State $g;$iv=if($s){$s.packVersion}else{"Not installed"};$bi=if(Test-Path(Join-Path $g "winhttp.dll")){"Installed"}else{"Not installed"};$bs=if(BepOK $g){"Complete"}else{"FIRST LAUNCH REQUIRED"}
- Write-Host "Valheim:        $g";Write-Host "BepInEx:        $bi";Write-Host "BepInEx Setup:  $bs";Write-Host "Installed TDC:  $iv";Write-Host "Repository:     $($m.packVersion)"
- Write-Host "`n[1] Install / Update`n[2] Verify`n[3] Refresh Repository`n[4] Exit`n"
- switch(Read-Host "Select"){"1"{Install $g $m}"2"{Verify $g}"3"{$m=Remote;Write-Host "Manifest refreshed."}"4"{exit 0}default{Write-Host "Invalid selection."}}
- Read-Host "`nPress Enter to continue"|Out-Null}}
-catch{Write-Host "`nERROR: $($_.Exception.Message)" -ForegroundColor Red;exit 1}
+
+function Test-BepInExInitialized {
+    param([string]$GamePath)
+
+    $logPath = Join-Path $GamePath "BepInEx\LogOutput.log"
+
+    if (-not (Test-Path $logPath -PathType Leaf)) {
+        return $false
+    }
+
+    try {
+        return (Get-Item $logPath).Length -gt 0
+    }
+    catch {
+        return $false
+    }
+}
+
+function Backup-TDCPack {
+    param([string]$GamePath)
+
+    $backupRoot = Join-Path $GamePath $BackupFolderName
+    $backupPath = Join-Path $backupRoot (Get-Date -Format "yyyyMMdd_HHmmss")
+
+    New-Item -ItemType Directory -Path $backupPath -Force | Out-Null
+
+    $itemsToBackup = @(
+        "BepInEx",
+        "doorstop_libs",
+        "winhttp.dll",
+        "doorstop_config.ini",
+        "changelog.txt",
+        $LocalManifestName,
+        $VersionFileName
+    )
+
+    foreach ($item in $itemsToBackup) {
+        $sourcePath = Join-Path $GamePath $item
+
+        if (Test-Path $sourcePath) {
+            Copy-Item $sourcePath $backupPath -Recurse -Force
+        }
+    }
+
+    return $backupPath
+}
+
+function Remove-TDCManagedFiles {
+    param(
+        [string]$GamePath,
+        $InstalledManifest
+    )
+
+    if (-not $InstalledManifest -or -not $InstalledManifest.managedFiles) {
+        return
+    }
+
+    Write-Host "Removing files owned by the previous TDC pack..."
+
+    foreach ($relativePath in $InstalledManifest.managedFiles) {
+        $fullPath = Join-Path $GamePath $relativePath
+
+        if (Test-Path $fullPath -PathType Leaf) {
+            Remove-Item $fullPath -Force
+        }
+    }
+}
+
+function Get-RepositorySnapshot {
+    $tempRoot = Join-Path $env:TEMP ("tdc_" + [guid]::NewGuid().ToString("N"))
+    $zipPath = "$tempRoot.zip"
+    $archiveUrl = "https://github.com/$RepoOwner/$RepoName/archive/refs/heads/$Branch.zip"
+
+    Write-Host "Downloading TDC repository snapshot..."
+
+    Invoke-WebRequest -Uri $archiveUrl -OutFile $zipPath -UseBasicParsing
+    Expand-Archive -Path $zipPath -DestinationPath $tempRoot -Force
+
+    $repoRoot = Get-ChildItem $tempRoot -Directory | Select-Object -First 1
+
+    if (-not $repoRoot) {
+        throw "Downloaded repository archive was empty."
+    }
+
+    return @{
+        Temp = $tempRoot
+        Zip  = $zipPath
+        Root = $repoRoot.FullName
+    }
+}
+
+function Copy-RepositoryPackage {
+    param(
+        [string]$GamePath,
+        $Package,
+        $Snapshot,
+        [ref]$ManagedFiles
+    )
+
+    $sourceRoot = Join-Path $Snapshot.Root $Package.source
+
+    if (-not (Test-Path $sourceRoot)) {
+        throw "Repository package '$($Package.source)' was not found."
+    }
+
+    $includePatterns = @($Package.include)
+    $excludePatterns = @($Package.exclude)
+    $sourceFiles = Get-ChildItem $sourceRoot -File -Recurse
+
+    foreach ($file in $sourceFiles) {
+        $relativePath = $file.FullName.Substring($sourceRoot.Length).TrimStart('\', '/')
+        $shouldCopy = ($includePatterns.Count -eq 0)
+
+        foreach ($pattern in $includePatterns) {
+            if ($pattern -and (($relativePath -like $pattern) -or ($file.Name -like $pattern))) {
+                $shouldCopy = $true
+            }
+        }
+
+        foreach ($pattern in $excludePatterns) {
+            if ($pattern -and (($relativePath -like $pattern) -or ($file.Name -like $pattern))) {
+                $shouldCopy = $false
+            }
+        }
+
+        if (-not $shouldCopy) {
+            continue
+        }
+
+        if ($Package.destination -eq ".") {
+            $destinationRelativePath = $relativePath
+        }
+        else {
+            $destinationRelativePath = Join-Path $Package.destination $relativePath
+        }
+
+        $destinationPath = Join-Path $GamePath $destinationRelativePath
+        $destinationDirectory = Split-Path $destinationPath -Parent
+
+        New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
+        Copy-Item $file.FullName $destinationPath -Force
+        $ManagedFiles.Value += $destinationRelativePath
+    }
+
+    Write-Host "[OK] $($Package.name)" -ForegroundColor Green
+}
+
+function Save-TDCState {
+    param(
+        [string]$GamePath,
+        $RemoteManifest,
+        $ManagedFiles
+    )
+
+    $state = [ordered]@{
+        packName     = $RemoteManifest.packName
+        packVersion  = $RemoteManifest.packVersion
+        installed    = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+        managedFiles = @($ManagedFiles | Sort-Object -Unique)
+    }
+
+    $state |
+        ConvertTo-Json -Depth 10 |
+        Set-Content (Join-Path $GamePath $LocalManifestName) -Encoding UTF8
+
+    @(
+        "TDC Valheim Pack"
+        "Version=$($RemoteManifest.packVersion)"
+    ) | Set-Content (Join-Path $GamePath $VersionFileName) -Encoding UTF8
+}
+
+function Install-TDCPack {
+    param(
+        [string]$GamePath,
+        $RemoteManifest
+    )
+
+    $installedManifest = Get-InstalledManifest -GamePath $GamePath
+    $bepInitialized = Test-BepInExInitialized -GamePath $GamePath
+
+    if (-not $bepInitialized) {
+        Write-Host ""
+        Write-Host "BepInEx has not completed its first launch yet." -ForegroundColor Yellow
+        Write-Host "Only the BepInEx bootstrap package will be installed."
+
+        if ((Read-Host "Continue? (Y/N)") -notmatch '^[Yy]$') {
+            return
+        }
+
+        $backupPath = Backup-TDCPack -GamePath $GamePath
+        Write-Host "Backup: $backupPath"
+
+        $snapshot = Get-RepositorySnapshot
+
+        try {
+            $managedFiles = @()
+
+            $bootstrapPackages = @(
+                $RemoteManifest.packages |
+                Where-Object { $_.stage -eq "bootstrap" }
+            )
+
+            foreach ($package in $bootstrapPackages) {
+                Copy-RepositoryPackage `
+                    -GamePath $GamePath `
+                    -Package $package `
+                    -Snapshot $snapshot `
+                    -ManagedFiles ([ref]$managedFiles)
+            }
+
+            if ($installedManifest -and $installedManifest.managedFiles) {
+                $managedFiles += @($installedManifest.managedFiles)
+            }
+
+            Save-TDCState `
+                -GamePath $GamePath `
+                -RemoteManifest $RemoteManifest `
+                -ManagedFiles $managedFiles
+        }
+        finally {
+            Remove-Item $snapshot.Zip -Force -ErrorAction SilentlyContinue
+            Remove-Item $snapshot.Temp -Recurse -Force -ErrorAction SilentlyContinue
+        }
+
+        Write-Host ""
+        Write-Host "============================================================" -ForegroundColor Yellow
+        Write-Host "              FIRST LAUNCH REQUIRED"
+        Write-Host "============================================================" -ForegroundColor Yellow
+        Write-Host "1. Close this installer."
+        Write-Host "2. Launch Valheim normally through Steam."
+        Write-Host "3. Wait until you reach the main menu."
+        Write-Host "4. Close Valheim."
+        Write-Host "5. Run the TDC installer again and choose Install / Update."
+        Write-Host ""
+        return
+    }
+
+    Write-Host "BepInEx initialization detected." -ForegroundColor Green
+
+    if ((Read-Host "Install/update full TDC client pack $($RemoteManifest.packVersion)? (Y/N)") -notmatch '^[Yy]$') {
+        return
+    }
+
+    $backupPath = Backup-TDCPack -GamePath $GamePath
+    Write-Host "Backup: $backupPath"
+
+    Remove-TDCManagedFiles `
+        -GamePath $GamePath `
+        -InstalledManifest $installedManifest
+
+    $snapshot = Get-RepositorySnapshot
+
+    try {
+        $managedFiles = @()
+
+        $clientPackages = @(
+            $RemoteManifest.packages |
+            Where-Object { $_.target -ne "server" }
+        )
+
+        foreach ($package in $clientPackages) {
+            Copy-RepositoryPackage `
+                -GamePath $GamePath `
+                -Package $package `
+                -Snapshot $snapshot `
+                -ManagedFiles ([ref]$managedFiles)
+        }
+
+        Save-TDCState `
+            -GamePath $GamePath `
+            -RemoteManifest $RemoteManifest `
+            -ManagedFiles $managedFiles
+    }
+    finally {
+        Remove-Item $snapshot.Zip -Force -ErrorAction SilentlyContinue
+        Remove-Item $snapshot.Temp -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    Write-Host ""
+    Write-Host "TDC client pack $($RemoteManifest.packVersion) installed." -ForegroundColor Green
+    Write-Host "$($managedFiles.Count) managed files recorded."
+}
+
+function Verify-TDCPack {
+    param([string]$GamePath)
+
+    $installedManifest = Get-InstalledManifest -GamePath $GamePath
+
+    if (-not $installedManifest) {
+        Write-Host "TDC is not installed." -ForegroundColor Yellow
+        return
+    }
+
+    $missingFiles = @()
+
+    foreach ($relativePath in $installedManifest.managedFiles) {
+        $fullPath = Join-Path $GamePath $relativePath
+
+        if (-not (Test-Path $fullPath -PathType Leaf)) {
+            $missingFiles += $relativePath
+        }
+    }
+
+    if ($missingFiles.Count -eq 0) {
+        Write-Host "All $($installedManifest.managedFiles.Count) TDC-managed files are present." -ForegroundColor Green
+    }
+    else {
+        Write-Host "$($missingFiles.Count) managed file(s) are missing:" -ForegroundColor Yellow
+
+        foreach ($missingFile in $missingFiles) {
+            Write-Host " - $missingFile"
+        }
+
+        Write-Host ""
+        Write-Host "Choose Install / Update to reinstall the current repository pack."
+    }
+}
+
+try {
+    $gamePath = Get-ValheimPath
+    $remoteManifest = Get-RemoteManifest
+
+    while ($true) {
+        Show-Header
+
+        $installedManifest = Get-InstalledManifest -GamePath $gamePath
+
+        if ($installedManifest) {
+            $installedVersion = $installedManifest.packVersion
+        }
+        else {
+            $installedVersion = "Not installed"
+        }
+
+        if (Test-BepInExInstalled -GamePath $gamePath) {
+            $bepInstalledStatus = "Installed"
+        }
+        else {
+            $bepInstalledStatus = "Not installed"
+        }
+
+        if (Test-BepInExInitialized -GamePath $gamePath) {
+            $bepSetupStatus = "Complete"
+        }
+        else {
+            $bepSetupStatus = "FIRST LAUNCH REQUIRED"
+        }
+
+        Write-Host "Valheim:        $gamePath"
+        Write-Host "BepInEx:        $bepInstalledStatus"
+        Write-Host "BepInEx Setup:  $bepSetupStatus"
+        Write-Host "Installed TDC:  $installedVersion"
+        Write-Host "Repository:     $($remoteManifest.packVersion)"
+        Write-Host ""
+        Write-Host "[1] Install / Update"
+        Write-Host "[2] Verify"
+        Write-Host "[3] Refresh Repository"
+        Write-Host "[4] Exit"
+        Write-Host ""
+
+        $selection = Read-Host "Select"
+
+        switch ($selection) {
+            "1" {
+                Install-TDCPack `
+                    -GamePath $gamePath `
+                    -RemoteManifest $remoteManifest
+            }
+
+            "2" {
+                Verify-TDCPack -GamePath $gamePath
+            }
+
+            "3" {
+                $remoteManifest = Get-RemoteManifest
+                Write-Host "Manifest refreshed." -ForegroundColor Green
+            }
+
+            "4" {
+                exit 0
+            }
+
+            default {
+                Write-Host "Invalid selection."
+            }
+        }
+
+        Write-Host ""
+        Read-Host "Press Enter to continue" | Out-Null
+    }
+}
+catch {
+    Write-Host ""
+    Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
+}
