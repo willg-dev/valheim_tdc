@@ -21,7 +21,7 @@
       "source": "TDCMods/plugins/CommunityPatch",
       "destination": "BepInEx/plugins/CommunityPatch",
       "include": [
-        "*.dll"
+        "*"
       ]
     },
    {
@@ -32,7 +32,7 @@
       "source": "TDCMods/plugins/EquipmentAndQuickSlots",
       "destination": "BepInEx/plugins/EquipmentAndQuickSlots",
       "include": [
-        "*.dll"
+        "*"
       ]
     },
     {
@@ -43,7 +43,7 @@
       "source": "TDCMods/plugins/EquipmentAndQuickSlots",
       "destination": "BepInEx/plugins/EquipmentAndQuickSlots",
       "include": [
-        "*.dll"
+        "*"
       ]
     },
     {
@@ -54,7 +54,7 @@
       "source": "TDCMods/plugins/Jotunn",
       "destination": "BepInEx/plugins/Jotunn",
       "include": [
-        "*.dll"
+        "*"
       ]
     },
     {
@@ -65,7 +65,7 @@
       "source": "TDCMods/plugins/MaxPlayerCount",
       "destination": "BepInEx/plugins/MaxPlayerCount",
       "include": [
-        "*.dll"
+        "*"
       ]
     }
   ]
