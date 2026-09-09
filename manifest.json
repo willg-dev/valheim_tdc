@@ -14,12 +14,23 @@
       ]
     },
     {
-      "name": "SmoothServer",
+      "name": "CommunityPatch",
       "type": "githubFolder",
       "stage": "mod",
       "target": "client-server",
-      "source": "TDCMods/plugins/SmoothServer",
-      "destination": "BepInEx/plugins/SmoothServer",
+      "source": "TDCMods/plugins/CommunityPatch",
+      "destination": "BepInEx/plugins/CommunityPatch",
+      "include": [
+        "*.dll"
+      ]
+    },
+   {
+      "name": "EquipmentAndQuickSlots",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/EquipmentAndQuickSlots",
+      "destination": "BepInEx/plugins/EquipmentAndQuickSlots",
       "include": [
         "*.dll"
       ]
