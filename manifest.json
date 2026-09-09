@@ -25,6 +25,28 @@
       ]
     },
     {
+      "name": "EquipmentAndQuickSlots",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/EquipmentAndQuickSlots",
+      "destination": "BepInEx/plugins/EquipmentAndQuickSlots",
+      "include": [
+        "*.dll"
+      ]
+    },
+    {
+      "name": "Jotunn",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/Jotunn",
+      "destination": "BepInEx/plugins/Jotunn",
+      "include": [
+        "*.dll"
+      ]
+    },
+    {
       "name": "MaxPlayerCount",
       "type": "githubFolder",
       "stage": "mod",
