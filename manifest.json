@@ -24,6 +24,17 @@
         "*"
       ]
     },
+    {
+      "name": "Groundwork",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/Groundwork",
+      "destination": "BepInEx/plugins/Groundwork",
+      "include": [
+        "*"
+      ]
+    },
    {
       "name": "EquipmentAndQuickSlots",
       "type": "githubFolder",
