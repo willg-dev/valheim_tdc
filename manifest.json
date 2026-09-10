@@ -1,6 +1,6 @@
 {
   "packName": "TDC Valheim Pack",
-  "packVersion": "0.7.1",
+  "packVersion": "0.7.2",
   "packages": [
     {
       "name": "BepInExPack_Valheim",
@@ -35,17 +35,6 @@
         "*"
       ]
     },
-   {
-      "name": "EquipmentAndQuickSlots",
-      "type": "githubFolder",
-      "stage": "mod",
-      "target": "client-server",
-      "source": "TDCMods/plugins/EquipmentAndQuickSlots",
-      "destination": "BepInEx/plugins/EquipmentAndQuickSlots",
-      "include": [
-        "*"
-      ]
-    },
     {
       "name": "EquipmentAndQuickSlots",
       "type": "githubFolder",
@@ -69,16 +58,16 @@
       ]
     },
     {
-  "name": "AchievementEnabler",
-  "type": "githubFolder",
-  "stage": "mod",
-  "target": "client-server",
-  "source": "TDCMods/patchers/AchievementEnabler",
-  "destination": "BepInEx/patchers/AchievementEnabler"
+      "name": "AchievementEnabler",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/patchers/AchievementEnabler",
+      "destination": "BepInEx/patchers/AchievementEnabler",
       "include": [
         "*"
       ]
-    }
+    },
     {
       "name": "MaxPlayerCount",
       "type": "githubFolder",
