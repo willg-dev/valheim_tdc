@@ -75,6 +75,9 @@
   "target": "client-server",
   "source": "TDCMods/patchers/AchievementEnabler",
   "destination": "BepInEx/patchers/AchievementEnabler"
+      "include": [
+        "*"
+      ]
     }
     {
       "name": "MaxPlayerCount",
