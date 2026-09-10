@@ -69,6 +69,14 @@
       ]
     },
     {
+  "name": "AchievementEnabler",
+  "type": "githubFolder",
+  "stage": "mod",
+  "target": "client-server",
+  "source": "TDCMods/patchers/AchievementEnabler",
+  "destination": "BepInEx/patchers/AchievementEnabler"
+    }
+    {
       "name": "MaxPlayerCount",
       "type": "githubFolder",
       "stage": "mod",
