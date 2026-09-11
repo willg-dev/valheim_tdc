@@ -29,6 +29,18 @@
       "exclude": []
     },
     {
+      "name": "VerdantsAscent-FiresGhettoNetworking-1.4.2",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/VerdantsAscent-FiresGhettoNetworking-1.4.2",
+      "destination": "BepInEx/plugins/VerdantsAscent-FiresGhettoNetworking-1.4.2",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+    {
       "name": "Advize-PlantEverything-1.21.0",
       "type": "githubFolder",
       "stage": "mod",
