@@ -29,6 +29,30 @@
       "exclude": []
     },
     {
+      "name": "shudnal-ConditionalConfigSync-1.0.5",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/shudnal-ConditionalConfigSync-1.0.5",
+      "destination": "BepInEx/plugins/shudnal-ConditionalConfigSync-1.0.5",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+    {
+      "name": "ValheimModding-YamlDotNet-16.3.1",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/ValheimModding-YamlDotNet-16.3.1",
+      "destination": "BepInEx/plugins/ValheimModding-YamlDotNet-16.3.1",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+    {
       "name": "shudnal-ExtraSlots-1.2.2",
       "type": "githubFolder",
       "stage": "mod",
