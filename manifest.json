@@ -29,6 +29,30 @@
       "exclude": []
     },
     {
+      "name": "Advize-PlantEverything-1.21.0",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/Advize-PlantEverything-1.21.0",
+      "destination": "BepInEx/plugins/Advize-PlantEverything-1.21.0",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+    {
+      "name": "Advize-PlantEasily-2.2.0",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/Advize-PlantEasily-2.2.0",
+      "destination": "BepInEx/plugins/Advize-PlantEasily-2.2.0",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+    {
       "name": "Groundwork",
       "type": "githubFolder",
       "stage": "mod",
