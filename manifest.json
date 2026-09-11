@@ -29,6 +29,18 @@
       "exclude": []
     },
     {
+      "name": "ConfigurationManager",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/ConfigurationManager",
+      "destination": "BepInEx/plugins/ConfigurationManager",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+    {
       "name": "shudnal-ConditionalConfigSync-1.0.5",
       "type": "githubFolder",
       "stage": "mod",
