@@ -29,6 +29,18 @@
       "exclude": []
     },
     {
+      "name": "shudnal-ExtraSlots-1.2.2",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/shudnal-ExtraSlots-1.2.2",
+      "destination": "BepInEx/plugins/shudnal-ExtraSlots-1.2.2",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+    {
       "name": "VerdantsAscent-FiresGhettoNetworking-1.4.2",
       "type": "githubFolder",
       "stage": "mod",
@@ -84,6 +96,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/EquipmentAndQuickSlots",
       "destination": "BepInEx/plugins/EquipmentAndQuickSlots",
+      "action": "remove",
       "include": [
         "*"
       ],
