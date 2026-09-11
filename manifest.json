@@ -23,6 +23,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/CommunityPatch",
       "destination": "BepInEx/plugins/CommunityPatch",
+      "action": "remove",
       "include": [
         "*"
       ],
