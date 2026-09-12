@@ -9,6 +9,7 @@
       "target": "client-server",
       "source": "BepInExPack_Valheim",
       "destination": ".",
+      "action": "install",
       "include": [
         "*"
       ],
@@ -23,6 +24,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/CommunityPatch",
       "destination": "BepInEx/plugins/CommunityPatch",
+      "action": "install",
       "include": [
         "*"
       ],
@@ -35,6 +37,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/ConfigurationManager",
       "destination": "BepInEx/plugins/ConfigurationManager",
+      "action": "install",
       "include": [
         "*"
       ],
@@ -47,6 +50,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/shudnal-ConditionalConfigSync-1.0.5",
       "destination": "BepInEx/plugins/shudnal-ConditionalConfigSync-1.0.5",
+      "action": "install",
       "include": [
         "*"
       ],
@@ -59,6 +63,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/ValheimModding-YamlDotNet-16.3.1",
       "destination": "BepInEx/plugins/ValheimModding-YamlDotNet-16.3.1",
+      "action": "install",
       "include": [
         "*"
       ],
@@ -71,6 +76,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/shudnal-ExtraSlots-1.2.2",
       "destination": "BepInEx/plugins/shudnal-ExtraSlots-1.2.2",
+      "action": "install",
       "include": [
         "*"
       ],
@@ -83,6 +89,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/VerdantsAscent-FiresGhettoNetworking-1.4.2",
       "destination": "BepInEx/plugins/VerdantsAscent-FiresGhettoNetworking-1.4.2",
+      "action": "install",
       "include": [
         "*"
       ],
@@ -95,6 +102,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/Advize-PlantEverything-1.21.0",
       "destination": "BepInEx/plugins/Advize-PlantEverything-1.21.0",
+      "action": "install",
       "include": [
         "*"
       ],
@@ -107,6 +115,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/Advize-PlantEasily-2.2.0",
       "destination": "BepInEx/plugins/Advize-PlantEasily-2.2.0",
+      "action": "install",
       "include": [
         "*"
       ],
@@ -119,6 +128,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/PONEIS-SmartContainers-1.8.2",
       "destination": "BepInEx/plugins/PONEIS-SmartContainers-1.8.2",
+      "action": "install",
       "include": [
         "*"
       ],
@@ -131,11 +141,12 @@
       "target": "client-server",
       "source": "TDCMods/plugins/Landoria-QuickLaunch-1.0.9",
       "destination": "BepInEx/plugins/Landoria-QuickLaunch-1.0.9",
+      "action": "install",
       "include": [
         "*"
       ],
       "exclude": []
-    }
+    },
     {
       "name": "Groundwork",
       "type": "githubFolder",
@@ -169,6 +180,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/Jotunn",
       "destination": "BepInEx/plugins/Jotunn",
+      "action": "install",
       "include": [
         "*"
       ],
@@ -207,6 +219,7 @@
       "target": "server",
       "source": "TDCMods/plugins/MaxPlayerCount",
       "destination": "BepInEx/plugins/MaxPlayerCount",
+      "action": "install",
       "include": [
         "*"
       ],
