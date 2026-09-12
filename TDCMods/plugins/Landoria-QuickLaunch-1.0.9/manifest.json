@@ -1,0 +1,15 @@
+{
+  "name": "QuickLaunch",
+  "version_number": "1.0.9",
+  "website_url": "https://github.com/landoria-gaming/LandoriaMods/tree/main/Landoria.QuickLaunch",
+  "description": "Gets you back into Valheim faster by automatically resuming your last local or multiplayer session.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2350"
+  ],
+  "categories": [
+    "ai-generated",
+    "mods",
+    "client-side",
+    "utility"
+  ]
+}

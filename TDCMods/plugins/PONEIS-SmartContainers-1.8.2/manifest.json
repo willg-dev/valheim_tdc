@@ -1,0 +1,9 @@
+{
+    "name": "SmartContainers",
+    "version_number": "1.8.2",
+    "website_url": "https://www.nexusmods.com/valheim/mods/3656",
+    "description": "Valheim 1.0 port of SmartContainers. Ctrl+Click to route loot into nearby chests by stack or item-group. Create custom groups and unload inventory in one click.",
+    "dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.2350"
+    ]
+}
