@@ -13,7 +13,7 @@ $BackupName = "TDCModpackBackups"
 function Show-Header {
     Clear-Host
     Write-Host "============================================================"
-    Write-Host "                 TDC VALHEIM INSTALLER v0.7.1"
+    Write-Host "                 TDC VALHEIM INSTALLER v0.8.0"
     Write-Host "============================================================"
     Write-Host ""
 }
@@ -97,9 +97,9 @@ function Get-PackageFileMap {
 
     $map = @()
     if ($BootstrapOnly) {
-        $packages = @($RemoteManifest.packages | Where-Object { $_.stage -eq "bootstrap" -and $_.target -ne "server" })
+        $packages = @($RemoteManifest.packages | Where-Object { $_.stage -eq "bootstrap" -and $_.target -ne "server" -and $_.action -ne "remove" })
     } else {
-        $packages = @($RemoteManifest.packages | Where-Object { $_.target -ne "server" })
+        $packages = @($RemoteManifest.packages | Where-Object { $_.target -ne "server" -and $_.action -ne "remove" })
     }
 
     foreach ($package in $packages) {
@@ -266,6 +266,35 @@ function Assert-BepInExBootstrap {
     }
 }
 
+function Get-RemovalPackages {
+    param($RemoteManifest)
+    return @($RemoteManifest.packages | Where-Object { $_.target -ne "server" -and $_.action -eq "remove" })
+}
+
+function Test-SafeRemovalDestination {
+    param([string]$Destination)
+    if ([string]::IsNullOrWhiteSpace($Destination)) { return $false }
+    $normalized = ($Destination -replace '/', '\').Trim('\')
+    return ($normalized -match '^BepInEx\\(plugins|patchers)\\[^\\]+$')
+}
+
+function Remove-RetiredPackages {
+    param([string]$GamePath, $RemoteManifest)
+    foreach ($package in (Get-RemovalPackages -RemoteManifest $RemoteManifest)) {
+        $destination = [string]$package.destination
+        if (-not (Test-SafeRemovalDestination -Destination $destination)) {
+            throw "Unsafe removal destination for '$($package.name)': '$destination'."
+        }
+        $fullPath = Join-Path $GamePath $destination
+        if (Test-Path $fullPath) {
+            Remove-Item $fullPath -Recurse -Force
+            Write-Host "[REMOVE] $destination" -ForegroundColor Yellow
+        } else {
+            Write-Host "[OK]     $destination already removed" -ForegroundColor DarkGray
+        }
+    }
+}
+
 function Install-TDCPack {
     param([string]$GamePath, $RemoteManifest)
 
@@ -282,6 +311,7 @@ function Install-TDCPack {
 
     $backup = Backup-TDCPack -GamePath $GamePath
     Write-Host "Backup: $backup"
+    Remove-RetiredPackages -GamePath $GamePath -RemoteManifest $RemoteManifest
 
     $snapshot = $null
     try {
@@ -317,12 +347,25 @@ function Verify-Repair {
         $bootstrapOnly = -not (Test-BepInExInitialized -GamePath $GamePath)
         $map = Get-PackageFileMap -RemoteManifest $RemoteManifest -Snapshot $snapshot -BootstrapOnly $bootstrapOnly
         $results = Compare-WithRepository -GamePath $GamePath -FileMap $map
+        $removalPackages = Get-RemovalPackages -RemoteManifest $RemoteManifest
 
         Write-Host ""
         Write-Host "TDC PACK VERIFICATION"
         Write-Host "------------------------------------------------------------"
 
         $problems = @()
+        foreach ($package in $removalPackages) {
+            $destination = [string]$package.destination
+            if (-not (Test-SafeRemovalDestination -Destination $destination)) {
+                throw "Unsafe removal destination for '$($package.name)': '$destination'."
+            }
+            if (Test-Path (Join-Path $GamePath $destination)) {
+                Write-Host "[FOUND]    $destination should be removed" -ForegroundColor Yellow
+                $problems += [pscustomobject]@{ Package=$package.name; Path=$destination; Status="REMOVE" }
+            } else {
+                Write-Host "[OK]       $destination is removed" -ForegroundColor Green
+            }
+        }
         foreach ($result in $results) {
             if ($result.Status -eq "OK") {
                 Write-Host "[OK]       $($result.Path)" -ForegroundColor Green
@@ -334,7 +377,7 @@ function Verify-Repair {
 
         Write-Host ""
         if ($problems.Count -eq 0) {
-            Write-Host "All $($results.Count) TDC-managed files match GitHub." -ForegroundColor Green
+            Write-Host "All TDC-managed files match GitHub and retired mods are removed." -ForegroundColor Green
             return
         }
 
@@ -343,6 +386,7 @@ function Verify-Repair {
         if ((Read-Host "Repair them now? (Y/N)") -match '^[Yy]$') {
             $backup = Backup-TDCPack -GamePath $GamePath
             Write-Host "Backup: $backup"
+            Remove-RetiredPackages -GamePath $GamePath -RemoteManifest $RemoteManifest
             Sync-FileMap -GamePath $GamePath -FileMap $map
             Save-State -GamePath $GamePath -RemoteManifest $RemoteManifest -FileMap $map
             Write-Host "Repair complete." -ForegroundColor Green
