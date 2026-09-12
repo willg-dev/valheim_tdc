@@ -179,6 +179,19 @@
       "type": "githubFolder",
       "stage": "mod",
       "target": "client-server",
+      "source": "TDCMods/plugins/AchievementEnabler",
+      "destination": "BepInEx/plugins/AchievementEnabler",
+      "action": "remove",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+    {
+      "name": "AchievementEnabler",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
       "source": "TDCMods/patchers/AchievementEnabler",
       "destination": "BepInEx/patchers/AchievementEnabler",
       "action": "remove",
