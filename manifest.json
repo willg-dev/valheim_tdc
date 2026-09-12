@@ -113,6 +113,30 @@
       "exclude": []
     },
     {
+      "name": "PONEIS-SmartContainers-1.8.2",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/Advize-PlantEasily-2.2.0",
+      "destination": "BepInEx/plugins/Advize-PlantEasily-2.2.0",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+    {
+      "name": "Landoria-QuickLaunch-1.0.9",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/Advize-PlantEasily-2.2.0",
+      "destination": "BepInEx/plugins/Advize-PlantEasily-2.2.0",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+    {
       "name": "Groundwork",
       "type": "githubFolder",
       "stage": "mod",
