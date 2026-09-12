@@ -157,6 +157,7 @@
       "target": "client-server",
       "source": "TDCMods/patchers/AchievementEnabler",
       "destination": "BepInEx/patchers/AchievementEnabler",
+      "action": "remove",
       "include": [
         "*"
       ],
