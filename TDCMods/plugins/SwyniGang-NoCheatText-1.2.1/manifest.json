@@ -1,0 +1,9 @@
+{
+  "name": "NoCheatText",
+  "version_number": "1.2.1",
+  "website_url": "",
+  "description": "Earn achievements in modded or cheated saves and hide Valheim 1.0 cheat labels, item warnings, and notifications without rewriting save data.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2350"
+  ]
+}
