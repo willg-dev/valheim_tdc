@@ -31,6 +31,19 @@
       "exclude": []
     },
     {
+      "name": "SwyniGang-NoCheatText-1.2.1",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/SwyniGang-NoCheatText-1.2.1",
+      "destination": "BepInEx/plugins/SwyniGang-NoCheatText-1.2.1",
+      "action": "install",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+    {
       "name": "ConfigurationManager",
       "type": "githubFolder",
       "stage": "mod",
