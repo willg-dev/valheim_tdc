@@ -1,6 +1,6 @@
 {
   "packName": "TDC Valheim Pack",
-  "packVersion": "0.7.7",
+  "packVersion": "0.7.8",
   "packages": [
     {
       "name": "BepInExPack_Valheim",
