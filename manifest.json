@@ -1,6 +1,6 @@
 {
   "packName": "TDC Valheim Pack",
-  "packVersion": "0.7.9",
+  "packVersion": "0.7.10",
   "packages": [
     {
       "name": "BepInExPack_Valheim",
@@ -24,6 +24,19 @@
       "target": "client-server",
       "source": "TDCMods/plugins/CommunityPatch",
       "destination": "BepInEx/plugins/CommunityPatch",
+      "action": "install",
+      "include": [
+        "*"
+      ],
+      "exclude": []
+    },
+     {
+      "name": "NetworkPerformanceSystem",
+      "type": "githubFolder",
+      "stage": "mod",
+      "target": "client-server",
+      "source": "TDCMods/plugins/NetworkPerformanceSystem",
+      "destination": "BepInEx/plugins/NetworkPerformanceSystem",
       "action": "install",
       "include": [
         "*"
@@ -102,7 +115,7 @@
       "target": "client-server",
       "source": "TDCMods/plugins/VerdantsAscent-FiresGhettoNetworking-1.4.2",
       "destination": "BepInEx/plugins/VerdantsAscent-FiresGhettoNetworking-1.4.2",
-      "action": "install",
+      "action": "remove",
       "include": [
         "*"
       ],
